@@ -3,6 +3,7 @@ import json
 import asyncio
 import logging
 import os
+import shutil
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 
@@ -40,10 +41,13 @@ async def get_models():
     }
 
 async def run_agy_cli(prompt: str) -> str:
+    # Resolve agy CLI path dynamically (look in PATH, fallback to default ~/.local/bin/agy)
+    agy_path = shutil.which("agy") or os.path.expanduser("~/.local/bin/agy")
+    logger.info(f"Resolved agy CLI path: {agy_path}")
     logger.info(f"Spawning agy CLI subprocess for prompt: {prompt[:100]}...")
     try:
         proc = await asyncio.create_subprocess_exec(
-            "/Users/songmyeongjin/.local/bin/agy",
+            agy_path,
             "-p", prompt,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
